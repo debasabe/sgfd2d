@@ -1,7 +1,7 @@
 ## GNU
-#CC = g++
+# CC = g++
 
-CF = ifort
+# CF = ifort
 
 ## Intel
 CC = icpc
@@ -13,7 +13,7 @@ INCL_DIRS =
 CFLAGS = -O3 -fopenmp ${INCL_DIRS}
 # CFLAGS = -g ${INCL_DIRS}
 # CFLAGS = -O3 -axAVX -fp-model precise -qopenmp -qopt-report=0 -qopt-report-phase=openmp
-#CFLAGS = -Ofast -fp-model precise -qopenmp
+# CFLAGS = -Ofast -fp-model precise -qopenmp
 
 O = OBJ/
 
@@ -25,10 +25,6 @@ all: sgfdm2d fdm1d
 
 # Compile all the files
 sgfdm2d: $(O)main.o $(O)sgfdm2d.o
-	@echo "Linking " $@
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
-
-fdm1d: $(O)fdm1d.o
 	@echo "Linking " $@
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
