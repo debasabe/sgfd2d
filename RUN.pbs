@@ -1,0 +1,18 @@
+#PBS -q intel
+#PBS -l walltime=200:00:00
+#PBS -l nodes=1:ppn=20
+#PBS -N SGFDM2D_10
+#PBS -o OUTPUT/${PBS_JOBNAME}.out
+#PBS -e ${PBS_JOBNAME}.err
+
+set -x
+#export OMP_NUM_THREADS=$PBS_NUM_PPN
+export OMP_NUM_THREADS=10
+cd $PBS_O_WORKDIR
+echo "** ~~"
+echo "**  ID = " $PBS_JOBID
+echo "** JOB = " $PBS_JOBNAME
+echo "** PPN = " $PBS_NUM_PPN
+echo "** SOFG Classroom example of SGFD2D"
+echo "** ~~"
+./sgfdm2d 500
