@@ -1,3 +1,6 @@
+#ifndef MACROSHDR
+#define MACROSHDR
+
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include "cmatrix.h"
@@ -21,4 +24,4 @@
 // Interval between saves
 #define SAVEINT 100
 
-
+#endif

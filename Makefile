@@ -1,7 +1,5 @@
 ## GNU
-# CC = g++
-
-# CF = ifort
+#CC = g++
 
 ## Intel
 CC = icpc
@@ -10,7 +8,7 @@ LIBS =
 
 INCL_DIRS =
 
-CFLAGS = -O3 -fopenmp ${INCL_DIRS}
+CFLAGS = -O3 -fopenmp ${INCL_DIRS} -std=c++11 -diag-disable=10441
 # CFLAGS = -g ${INCL_DIRS}
 # CFLAGS = -O3 -axAVX -fp-model precise -qopenmp -qopt-report=0 -qopt-report-phase=openmp
 # CFLAGS = -Ofast -fp-model precise -qopenmp

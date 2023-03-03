@@ -13,9 +13,9 @@
 #define ZZ(i) (ZMIN + i*hz)
 #define TT(i) (i*ht)
 
-//#define ZTOP(x) (0.5*(ZMIN+ZMAX))
+#define ZTOP(x) (0.5*(ZMIN+ZMAX))
 
-#define ZTOP(x) (ZMIN)
+//#define ZTOP(x) (ZMIN)
 
 // P-wave velocity
 double alpha(double x, double z)
@@ -66,7 +66,7 @@ void sgfd2d(int nx, int nz, int nt)
 	double hx, hz, ht, px, pz, l2m, l, m, b;
 	int ix, iz, it;
 	char fnsnapshot[256];
-	if( nx<=1 || nz <=1 )
+	if( nx<=1 || nz<=1 )
 	{ // check for errors in input parameters
 		printf("\nERROR in input parameters, nx=%i, nz=%i\n",nx,nz);
 		return;
@@ -82,7 +82,13 @@ void sgfd2d(int nx, int nz, int nt)
 	printf("Increments: hx = %g, hz = %g\n", hx, hz);
 	if( nt<=0 )
 	{// compute nt and ht if not provided
-		ht= (hx<hz)? 0.7*hx/VMAX : 0.7*hz/VMAX;  // get the smallest increments
+		ht= (hx<hz) ? 0.7*hx/VMAX : 0.7*hz/VMAX;  // get the smallest increments
+		/*
+        if( hx<hz )
+            ht= 0.7*hx/VMAX;
+        else
+            ht= 0.7*hz/VMAX;
+         */
 		nt= TMAX/ht;
 		if( nt*ht<TMAX )// make sure the time domain is fully covered
 			++nt;
@@ -93,7 +99,7 @@ void sgfd2d(int nx, int nz, int nt)
 	pz= ht/hz;
 	printf("Time increment = %g, NT = %i\n", ht, nt);
 	printf("Beginning time-stepping loop...\n");
-	// Time-stepping loop
+	// Time-stepping loop - Not parallel
 	for( it=1; it<=nt; ++it )
 	{
 		// Update velocity

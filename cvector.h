@@ -8,6 +8,7 @@
  * Vec3D for vectors with 3 components, from which dVec3D, fVec3D and iVec3D inherit.
  * Jonas D. De Basabe (jonas@cicese.mx)
  * File:   cvector.h
+ * 2023/02/03 - Reimplemented the base object to use std::vector instead of pointers
  */
 //---------------------------------------------------------------------------
 #ifndef CVECTORHDR
@@ -19,6 +20,8 @@
 #include <cstdlib>
 #include <limits>
 #include <cassert>
+#include <algorithm>
+#include <vector>
 
 //---------------------------------------------------------------------------
 // A small value
@@ -78,48 +81,35 @@ template <class T>
 class cVector
 {
 protected:
-    bool fowndata;
-    int n;
-    T *d;
+    std::vector<T> d;
 
 public:
     cVector(void)
-    { n=0; d=NULL; fowndata= true; }
+    { }
     cVector(int m, T val=0)
-    { d=NULL; Init(m,val); }
+    { Init(m,val); }
     cVector(cVector &v)
     {
-        fowndata= false; // do not free memory on destroy
-        n= v.n; d= v.d;
+        d= v.d;
     }
     ~cVector(void)
-    { Empty(); }
+    {
+        d.clear();
+    }
     bool Init(int m)
     {
         try
         {
-            fowndata= true;
             if( m==0 )
-                n=0;
-            else if( d==NULL )
-            {
-                n=m;
-                d= new T[n];
-                if( !d )
-                	throw(1);
-            }
-            else if( n!=m )
-            {
-                delete[]d;
-                n=m;
-                d= new T[n];
-                if( !d )
-                	throw(2);
-            }
+                d.clear();
+            else
+                d.resize(m);
+            if( m!=d.size() )
+                throw(1);
         }
         catch(...)
         {
-        	return false;
+            return false;
         }
         return true;
     }
@@ -128,24 +118,12 @@ public:
         int i;
         try
         {
-            fowndata= true;
             if( m==0 )
-                n=0;
-            else if( d==NULL )
-            {
-                n=m;
-                d= new T[n];
-                if( !d )
-                	throw(1);
-            }
-            else if( n!=m )
-            {
-                delete[]d;
-                n=m;
-                d= new T[n];
-                if( !d )
-                	throw(2);
-            }
+                d.clear();
+            else
+                d.resize(m);
+            if( m!=d.size() )
+                throw(1);
         }
         catch(...)
         {
@@ -153,148 +131,111 @@ public:
         }
 
 #pragma omp parallel for
-        for( i=0; i<n; ++i )
+        for( i=0; i<d.size(); ++i )
             d[i]= val;
         return true;
     }
-    int Dim(void)
-    { return n; }
-    T* Data(void)
-    { return d; }
-    bool IsEmpty(void)
-    { return (d==NULL); }
-    void Empty(void)
-    { n= 0; if(fowndata) delete[]d; d=NULL; }
-    void Swap(cVector &v)
+    int size(void)
     {
-        int nn= v.n;
-        T *daux= v.d;
-        v.d= d; d= daux;
-        v.n= n; n= nn;
+        return d.size();
     }
-    void Copy(cVector<T> &v)
+    bool empty(void)
     {
-        int i;
-        if( n!=v.n )
-            Init(v.n,0);
-#pragma omp parallel for
-        for( i=0; i<n; ++i )
-            d[i]= v[i];
+        return d.empty();
     }
-    void Display(void)
+    void clear(void)
     {
-        for( int i=0; i<n; ++i )
-            std::cout<< d[i] << " ";
-        std::cout<<std::endl;
+        d.clear();
     }
     T Max(void)
     {
         T m=d[0];
-        for( int i=1; i<n; ++i )
-            if( m<d[i] )
-                m= d[i];
+        for( T x : d )
+            if( m<x )
+                m= x;
         return m;
     }
     T Min(void)
     {
         T m=d[0];
-        for( int i=1; i<n; ++i )
-            if( m>d[i] )
-                m= d[i];
+        for( T x : d )
+            if( m>x )
+                m= x;
         return m;
     }
     T AbsMin(void)
     {
         T m=fabs(d[0]);
-        for( int i=1; i<n; ++i )
-            if( m>fabs(d[i]) )
-                m= fabs(d[i]);
+        for( T x : d )
+            if( m>fabs(x) )
+                m= fabs(x);
         return m;
     }
     void Plus(cVector<T> &v, T a)
     {
         int i;
-        if( n==v.n )
+        if( d.size()==v.size() )
         {
 #pragma omp parallel for
-            for( i=0; i<n; ++i )
+            for( i=0; i<d.size(); ++i )
                 d[i]+= a*v[i];
         }
     }
     void Sort(void)
     {
-    	T aux;
-        for(int i=0,j; i<n-1; ++i)
-        {
-            for( j=i+1; j<n; ++j )
-                if(d[i]>d[j])
-                {
-                    aux= d[i];
-                    d[i]= d[j];
-                    d[j]= aux;
-                }
-        }
+        std::sort(d.begin(), d.end());
     }
     // Compute a vector-vector dot product
     T Mult(cVector<T> &v)
     {
-        int nn = ( n<=v.Dim() ) ? n : v.Dim();
+        int nn = ( d.size()<=v.size() ) ? d.size() : v.size();
         T res= 0;
 #pragma omp parallel for  reduction(+: res)
         for( int i=0; i<nn; ++i )
             res+= d[i]*v[i];
         return res;
-    }//*/
+    }
     T Norm2(void)
     {
         T res= 0;
 #pragma omp parallel for  reduction(+: res)
-        for( int i=0; i<n; ++i )
-            res+= sqr(d[i]);
+        for( T x : d )
+            res+= sqr(x);
         return sqrt(res);
     }
     void sv(cVector<T> &v, T a)
     {
         int i;
-        if( n==v.n )
+        if( d.size()==v.size() )
         {
 #pragma omp parallel for
-            for( i=0; i<n; ++i )
+            for( i=0; i<d.size(); ++i )
                 d[i]= a*v[i];
         }
     }
     T& operator[](int i)
     {
-    	assert(i>=0 && i<n );
     	return d[i];
     }
     const T& operator[](int i) const
     {
-    	assert(i>=0 && i<n );
     	return d[i];
     }
     cVector &operator=(const T &val)
     {
         int i;
 #pragma omp parallel for
-        for( i=0; i<n; ++i )
+        for( i=0; i<d.size(); ++i )
             d[i]= val;
-        return *this;
-    }
-    cVector &operator=(cVector &v)
-    {
-        Empty();
-        fowndata= false; // do not free memory on destroy
-        n= v.n; d= v.d;
         return *this;
     }
     cVector &operator+=(cVector &v)
     {
         int i;
-        if( n==v.n )
+        if( d.size()==v.size() )
         {
 #pragma omp parallel for
-            for( i=0; i<n; ++i )
+            for( i=0; i<d.size(); ++i )
                 d[i]+= v[i];
         }
         return *this;
@@ -302,87 +243,85 @@ public:
     cVector &operator-=(cVector &v)
     {
         int i;
-        if( n==v.n )
+        if( d.size()==v.size() )
         {
 #pragma omp parallel for
-            for( i=0; i<n; ++i )
+            for( i=0; i<d.size(); ++i )
                 d[i]-= v[i];
         }
         return *this;
     }
     cVector &operator*(const T &val)
     {
-        int i;
 #pragma omp parallel for
-        for( i=0; i<n; ++i )
-            d[i]*= val;
+        for( T x : d )
+            x*= val;
         return *this;
     }
     cVector &operator*=(const T &val)
     {
-        int i;
 #pragma omp parallel for
-        for( i=0; i<n; ++i )
-            d[i]*= val;
+        for( T x : d )
+            x*= val;
         return *this;
     }
     cVector &operator/=(cVector &v)
     {
         int i;
-        if( n==v.n )
+        if( d.size()==v.size() )
         {
 #pragma omp parallel for
-            for( i=0; i<n; ++i )
-                d[i]/= v[i];
+            for( T x : d )
+                x/= v[i];
         }
         return *this;
     }
     bool operator==(cVector &v)
     {
-        for(int i=0; i<n; ++i)
+        for(int i=0; i<d.size(); ++i)
             if(d[i]!=v[i])
                 return false;
         return true;
     }
     bool operator>=(cVector &v)
     {
-        for(int i=0; i<n; ++i)
+        for(int i=0; i<d.size(); ++i)
             if(d[i]<v[i])
                 return false;
         return true;
     }
     bool operator<=(cVector &v)
     {
-        for(int i=0; i<n; ++i)
+        for(int i=0; i<d.size(); ++i)
             if(d[i]>v[i])
                 return false;
         return true;
     }
     bool operator>(cVector &v)
     {
-        for(int i=0; i<n; ++i)
+        for(int i=0; i<d.size(); ++i)
             if(d[i]<=v[i])
                 return false;
         return true;
     }
     bool operator<(cVector &v)
     {
-        for(int i=0; i<n; ++i)
+        for(int i=0; i<d.size(); ++i)
             if(d[i]>=v[i])
                 return false;
         return true;
     }
     bool IsNan(void)
     {
-        for(int i=0; i<n; ++i)
-            if( isnan(d[i]) || isinf(d[i]) )
+        for( T x : d )
+            if( isnan(x) || isinf(x) )
                 return true;
         return false;
     }
     bool IsSmall(void)
     {
-        for(int i=0; i<n; ++i)
-            if( !is_small(d[i]) )
+            for( T x : d )
+            if( !is_small(x) )
                 return false;
         return true;
     }
@@ -401,11 +340,6 @@ public:
     {offset=0;}
     cOffsetVec(int m, int Offset, T val): cVector<T>(m,val)
     {SetOffset(Offset);}
-    cOffsetVec(cOffsetVec &v)
-    {
-        cVector<T>::fowndata= false; // do not free memory on destroy
-        cVector<T>::n= v.n; cVector<T>::d= v.d; offset= v.offset;
-    }
     void Init(int m, int Offset, T val)
     {cVector<T>::Init(m,val); SetOffset(Offset);}
     void SetOffset(int offs)
@@ -414,19 +348,19 @@ public:
     { return offset; }
     T& operator[](int i)
     {
-        if(i<offset || i>=offset+cVector<T>::n) exit(-1);
+        if(i<offset || i>=offset+cVector<T>::d.size()) exit(-1);
         return cVector<T>::d[i-offset];
     }
     const T& operator[](int i) const
     {
-        if(i<offset || i>=offset+cVector<T>::n) exit(-1);
+        if(i<offset || i>=offset+cVector<T>::d.size()) exit(-1);
         return cVector<T>::d[i-offset];
     }
     cOffsetVec &operator=(const double &val)
     {
         int i;
 #pragma omp parallel for
-        for( i=0; i<cVector<T>::n; ++i )
+        for( i=0; i<cVector<T>::d.size(); ++i )
             cVector<T>::d[i]= val;
         return *this;
     }
@@ -439,26 +373,12 @@ public:
     {}
     dvec(cVector<double> &v) : cVector<double>(v)
     {}
-    dvec(int m, double *v)
-    {
-    	d= v;
-    	n= m;
-    	fowndata= false;
-    }
-    dvec &operator=(cVector<double> &v)
-    {
-        Empty();
-        fowndata= false;
-        cVector<double>::n= v.Dim();
-        cVector<double>::d= v.Data();
-        return *this;
-    }
     dvec &operator=(const double &val)
     {
         int i;
 #pragma omp parallel for
-        for( i=0; i<cVector<double>::n; ++i )
-            cVector<double>::d[i]= val;
+        for( double x : d )
+            x= val;
         return *this;
     }
 };
