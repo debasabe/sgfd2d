@@ -1,7 +1,7 @@
 /*
  * fdm1d.cpp
  * 1D acoustic wave propagation exercise
- * J.D. De Basabe (jonas@cicese.mx) 
+ * J.D. De Basabe (jonas@cicese.mx)
  */
 
 #include "macros.h"
@@ -17,7 +17,9 @@ double alpha(double x)
 {
     double v=VMAX;
     if( x<XMAX/5.0)
+	{
         v=0.5*VMAX;
+	}
 	return v;
 }
 
@@ -26,7 +28,7 @@ double Ricker(double t)
 {
 	double t0 = 0.78/PKFREQ;
 	return -2.0*sqr(M_PI*PKFREQ)*(1.0-2.0*sqr(M_PI*PKFREQ*(t-t0)))
-		*exp( -sqr(M_PI*PKFREQ*(t-t0)) );	
+		*exp( -sqr(M_PI*PKFREQ*(t-t0)) );
 }
 
 // Gaussian distribution
@@ -77,8 +79,8 @@ int fdm1d(int nx, int nt)
 	{
 		for( ix=1; ix<(nx-1); ++ix )
         {   // vel = alpha(ix*hx);
-            u[ix][it+1]= 2.0*u[ix][it] - u[ix][it-1] 
-                + sqr(p*alpha(XX(ix)))*(u[ix+1][it] - 2.0*u[ix][it] + u[ix-1][it]) 
+            u[ix][it+1]= 2.0*u[ix][it] - u[ix][it-1]
+                + sqr(p*alpha(XX(ix)))*(u[ix+1][it] - 2.0*u[ix][it] + u[ix-1][it])
                 + ht*Source(XX(ix),it*ht);
         }
 	}
@@ -88,7 +90,7 @@ int fdm1d(int nx, int nt)
         return 0;
     }
 	printf("End of time-stepping loop.\n");
-    sprintf(image, "ximage < %s n1=%i d1=%g d2=%g cmap=rgb1 title='c=%g' &", 
+    sprintf(image, "ximage < %s n1=%i d1=%g d2=%g cmap=rgb1 title='c=%g' &",
             fnsnapshot,nt+1, ht, hx, VMAX);
     printf("%s\n", image);
     return system(image);
@@ -96,7 +98,7 @@ int fdm1d(int nx, int nt)
 
 // argc = numero de parameters
 // argv = parametros como lista de palabras
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {   // argv[0] = comando completo, e.g. 'fdm1d 101 600'
     int nx=0, nt=0;
     switch( argc )
