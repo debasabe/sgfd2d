@@ -1,14 +1,14 @@
-## GNU
-#CC = g++
-
-## Intel
-CC = icpc
-
 LIBS =
 
 INCL_DIRS =
 
-CFLAGS = -O3 -fopenmp ${INCL_DIRS} -std=c++11 -diag-disable=10441
+## GNU
+CC = g++
+CFLAGS = -O3 -fopenmp ${INCL_DIRS} -std=c++11
+
+## Intel
+# CC = icpc
+# CFLAGS = -O3 -fopenmp ${INCL_DIRS} -std=c++11 -diag-disable=10441
 # CFLAGS = -g ${INCL_DIRS}
 # CFLAGS = -O3 -axAVX -fp-model precise -qopenmp -qopt-report=0 -qopt-report-phase=openmp
 # CFLAGS = -Ofast -fp-model precise -qopenmp
@@ -23,6 +23,10 @@ all: sgfdm2d fdm1d
 
 # Compile all the files
 sgfdm2d: $(O)main.o $(O)sgfdm2d.o
+	@echo "Linking " $@
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+fdm1d: $(O)fdm1d.o
 	@echo "Linking " $@
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
@@ -47,7 +51,7 @@ clrout:
 
 # Delete the temporay files and executable
 clean:
-	rm -f sgfdm2d $(O)*
+	rm -f sgfdm2d fdm1d $(O)*
 
 remake: clean default
 
