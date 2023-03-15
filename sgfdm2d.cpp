@@ -63,15 +63,15 @@ double Source(double x, double z, double t)
 // Wave propagation function
 void sgfd2d(int nx, int nz, int nt)
 {
-	double hx, hz, ht, px, pz, l2m, l, m, b;
+	double hx=0.0, hz, ht, px, pz, l2m, l, m, b;
 	int ix, iz, it;
 	char fnsnapshot[256];
 	if( nx<=1 || nz<=1 )
 	{ // check for errors in input parameters
 		printf("\nERROR in input parameters, nx=%i, nz=%i\n",nx,nz);
-		return;
+		return; // Exit the function if there is an error in nx or nz
 	}
-	// Declare matrices for the pressure field
+	// Declare matrices for the pressure field.
 	dmat vx(nx,nz,0.0), vz(nx,nz,0.0), sxx(nx,nz,0.0), szz(nx,nz,0.0), sxz(nx,nz,0.0);
 
 	printf("\n\tStaggered-Grid Finite-Diference 2D Elastic Wave Propagation\n");
@@ -109,25 +109,32 @@ void sgfd2d(int nx, int nz, int nt)
 			{
 				b  = 1.0/rho(XX(ix),ZZ(iz));
 
-                vx[ix][iz]+= b*(px*(sxx[ix+1][iz] - sxx[ix][iz]) + pz*(sxz[ix][iz] - sxz[ix][iz-1]) )
-                  + ht*NSX*Source(XX(ix),ZZ(iz),TT(it));
-                vz[ix][iz]+= b*(pz*(szz[ix][iz+1] - szz[ix][iz]) + px*(sxz[ix][iz] - sxz[ix-1][iz]) )
-                  + ht*NSZ*Source(XX(ix),ZZ(iz),TT(it));
+				// Vx_{ix+1/2,iz}
+                vx[ix][iz]+= b*(px*(sxx[ix+1][iz] - sxx[ix][iz])
+					+ pz*(sxz[ix][iz] - sxz[ix][iz-1]) )
+					+ ht*NSX*Source(XX(ix),ZZ(iz),TT(it));
+				// Vz_{ix, iz+1/2}
+                vz[ix][iz]+= b*(pz*(szz[ix][iz+1] - szz[ix][iz])
+					+ px*(sxz[ix][iz] - sxz[ix-1][iz]) )
+					+ ht*NSZ*Source(XX(ix),ZZ(iz),TT(it));
 			}
 
-		// Update stress
+		// Update stress at t= (l+1/2)ht
 #pragma omp parallel for private(ix, iz, b, m, l2m, l)
 		for( ix=1; ix<(nx-1); ++ix )
 			for( iz=1; iz<(nz-1); ++iz )
 			{
-				b  = 1.0/rho(XX(ix),ZZ(iz));
-				m  = sqr(beta(XX(ix),ZZ(iz)))/b;
-				l2m= sqr(alpha(XX(ix),ZZ(iz)))/b;
-				l  = l2m - 2.0*m;
+				b  = 1.0/rho(XX(ix),ZZ(iz)); 		// bouyancy
+				m  = sqr(beta(XX(ix),ZZ(iz)))/b; 	// mu
+				l2m= sqr(alpha(XX(ix),ZZ(iz)))/b; 	// lambda + 2 mu
+				l  = l2m - 2.0*m;					// lambda
 
-                sxx[ix][iz]+= l2m*px*(vx[ix][iz] - vx[ix-1][iz]) + l*pz*(vz[ix][iz] - vz[ix][iz-1]);
-                szz[ix][iz]+= l*px*(vx[ix][iz] - vx[ix-1][iz]) + l2m*pz*(vz[ix][iz] - vz[ix][iz-1]);
-                sxz[ix][iz]+= m*( px*(vz[ix+1][iz] - vz[ix][iz]) + pz*(vx[ix][iz+1] - vx[ix][iz]) );
+                sxx[ix][iz]+= l2m*px*(vx[ix][iz] - vx[ix-1][iz])
+					+ l*pz*(vz[ix][iz] - vz[ix][iz-1]);
+                szz[ix][iz]+= l*px*(vx[ix][iz] - vx[ix-1][iz])
+					+ l2m*pz*(vz[ix][iz] - vz[ix][iz-1]);
+                sxz[ix][iz]+= m*( px*(vz[ix+1][iz] - vz[ix][iz])
+					+ pz*(vx[ix][iz+1] - vx[ix][iz]) );
 			}
 
 		// Save snapshots

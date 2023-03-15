@@ -18,7 +18,7 @@ double alpha(double x)
     double v=VMAX;
     if( x<XMAX/5.0)
 	{
-        v=0.5*VMAX;
+        v=VMAX;
 	}
 	return v;
 }
@@ -63,20 +63,20 @@ int fdm1d(int nx, int nt)
 	printf("Finite Difference Mesh: nx = %i, hx=%g\n",nx,hx);
 	if( nt<=0 )
 	{// compute nt and ht if not provided
-		ht= hx/VMAX;
-		nt= TMAX/ht;
+		ht= hx/VMAX; // Stability condition
+		nt= TMAX/ht; // Careful with roundup
 		if( nt*ht<TMAX )// make sure the time domain is fully covered
 			++nt; // nt = nt + 1
 	}
 	else// compute ht
 		ht= (double) TMAX/nt;
-	p= ht/hx;
+	p= ht/hx; // not exactly as defined in class
     u.Init(nx,nt+1,0.0); // u[m][n], m=0...nx-1; n=0...nt
 	printf("Time increment = %g, NT = %i\n", ht, nt);
 	printf("Beginning time-stepping loop...\n");
 	// Time-stepping loop
 	for( it=1; it<nt; ++it )
-	{
+	{	// finite-differences stencil
 		for( ix=1; ix<(nx-1); ++ix )
         {   // vel = alpha(ix*hx);
             u[ix][it+1]= 2.0*u[ix][it] - u[ix][it-1]
@@ -84,6 +84,7 @@ int fdm1d(int nx, int nt)
                 + ht*Source(XX(ix),it*ht);
         }
 	}
+
 	if( !u.Save(fnsnapshot) )
     {
         printf("Error saving results to file %s\n",fnsnapshot);
@@ -111,9 +112,10 @@ int main(int argc, char **argv)
             sscanf(argv[2],"%i",&nt);
             break;
         default:
-            nx= 200;
+            nx= 201;
             nt= 0;
             break;
     }
     return fdm1d(nx,nt);
 }
+

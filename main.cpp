@@ -49,7 +49,8 @@ int main(int argc, char **argv)
 	// Create output folder
 	err= mkdir(szName,0777); // Modificar para correr en Win
     if( err && errno!=EEXIST ) // Check for errors creating folder
-    {    printf("ERROR creating output dir %s, error code = %i\n", szName, errno);
+    {
+		printf("ERROR creating output dir %s, error code = %i\n", szName, errno);
 	}
     // Call the main FD method
 	sgfd2d(nx,nz,nt);

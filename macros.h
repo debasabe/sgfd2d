@@ -5,7 +5,7 @@
 #include <cmath>
 #include "cmatrix.h"
 
-// Physical Domain
+// Physical Domain (1km x 1km)
 #define XMIN 0.0
 #define XMAX 1000.0
 #define ZMIN 0.0
