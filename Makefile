@@ -3,8 +3,8 @@ LIBS =
 INCL_DIRS =
 
 ## GNU
-CC = g++
-CFLAGS = -O3 -fopenmp ${INCL_DIRS} -std=c++11
+CC = icpc
+CFLAGS = -O3 -qopenmp ${INCL_DIRS} -std=c++11 -diag-disable=10441
 
 ## Intel
 # CC = icpc
