@@ -12,13 +12,15 @@
 #define XX(i) (XMIN + i*hx)
 #define TT(i) (i*ht)
 
+// Numeros reales: float, double
+
 // P-wave velocity
 double alpha(double x)
 {
     double v=VMAX;
-    if( x<XMAX/5.0)
+    if( x<XMAX/2.0)
 	{
-        v=VMAX;
+        v=0.5*VMAX;
 	}
 	return v;
 }
@@ -37,17 +39,17 @@ double Gauss(double t, double mn, double sd)
 	return exp( -sqr( (t-mn)/sd ) )/(sd*sqrt(2.0*M_PI));
 }
 
-// Source
+// Source (f=fuente)
 double Source(double x, double t)
 {
 	return Gauss(x,XSRC,XSW)*Ricker(t);
 }
 
-// Wave propagation function
+// Wave propagation function, nx->N, nt->M
 int fdm1d(int nx, int nt)
 {
 	double hx, ht, p;
-	int ix, it;
+	int ix, it; // int->integer
     char image[100], fnsnapshot[]= "OUTPUT/out.bin";
 	if( nx<=1 )
 	{ // check for errors in input parameters
@@ -55,18 +57,19 @@ int fdm1d(int nx, int nt)
 		return 0;
 	}
 	// Declare matrices for the pressure field
-	dmat u;
+	// double u[200][200];
+	dmat u; // definido en cmatrix.h
 
 	printf("\n\tFinite-Diference 1D Acoustic Wave Propagation\n");
 	// Compute increments
 	hx = (double) (XMAX - XMIN)/(nx-1.0);
-	printf("Finite Difference Mesh: nx = %i, hx=%g\n",nx,hx);
+	printf("Finite Difference Mesh: nx = %i, hx=%g\n",nx,hx);//reales: %f, %e
 	if( nt<=0 )
 	{// compute nt and ht if not provided
 		ht= hx/VMAX; // Stability condition
 		nt= TMAX/ht; // Careful with roundup
 		if( nt*ht<TMAX )// make sure the time domain is fully covered
-			++nt; // nt = nt + 1
+			++nt; // nt = nt + 1;
 	}
 	else// compute ht
 		ht= (double) TMAX/nt;

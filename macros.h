@@ -11,7 +11,7 @@
 #define ZMIN 0.0
 #define ZMAX 1000.0
 // Time domain
-#define TMAX 1.0
+#define TMAX 1.5
 // Source parameters
 #define PKFREQ 30.0
 #define XSRC 500.0
