@@ -13,7 +13,7 @@
 // Time domain
 #define TMAX 1.5
 // Source parameters
-#define PKFREQ 30.0
+#define PKFREQ 50.0
 #define XSRC 500.0
 #define ZSRC 500.0
 #define NSX 0.0
