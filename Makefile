@@ -3,16 +3,14 @@ LIBS =
 INCL_DIRS =
 
 ## GNU
-CC = icpx
-#CFLAGS = -O3 -qopenmp ${INCL_DIRS} -std=c++11 -diag-disable=10441
-CFLAGS = -O3 -qopenmp
+# CC = g++
+# CFLAGS = -O3 -fopenmp
 
 ## Intel
-# CC = icpc
-# CFLAGS = -O3 -fopenmp ${INCL_DIRS} -std=c++11 -diag-disable=10441
-# CFLAGS = -g ${INCL_DIRS}
-# CFLAGS = -O3 -axAVX -fp-model precise -qopenmp -qopt-report=0 -qopt-report-phase=openmp
-# CFLAGS = -Ofast -fp-model precise -qopenmp
+CC = icpx
+FC = ifort
+#CFLAGS = -O3 -qopenmp ${INCL_DIRS} -std=c++11 -diag-disable=10441
+CFLAGS = -O3 -qopenmp
 
 O = OBJ/
 

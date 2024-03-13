@@ -13,7 +13,8 @@
 #define ZZ(i) (ZMIN + i*hz)
 #define TT(i) (i*ht)
 
-#define ZTOP(x) (0.5*(ZMIN+ZMAX))
+//#define ZTOP(x) (0.5*(ZMIN+ZMAX))
+#define ZTOP(x) ZMAX
 
 //#define ZTOP(x) (ZMIN)
 
@@ -21,7 +22,7 @@
 double alpha(double x, double z)
 {
 	if( z<ZTOP(x) )
-		return 1500.0;
+		return 2000.0;
 	return 2000.0;
 }
 
@@ -33,6 +34,7 @@ double beta(double x, double z)
 	return 1000.0;
 }
 
+// Density
 double rho(double x, double z)
 {
 	if( z<ZTOP(x) )

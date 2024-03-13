@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 			break;
 
 		default: // No parameters, set default values for the FD grid
-			nx= nz= 200;
+			nx= nz= 201;
 			nt= 0;
 	}
 
